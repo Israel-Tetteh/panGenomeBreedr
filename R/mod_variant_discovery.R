@@ -308,7 +308,7 @@ mod_variant_discovery_server <- function(id) {
 
       tryCatch({
         if (!file.exists(input$db_path)) {
-          showNotification("Error: Database file not found", type = "error")
+          shinyWidgets::show_toast("Error: Database file not found", type = "error")
           return()
         }
 
