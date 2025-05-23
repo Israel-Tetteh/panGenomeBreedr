@@ -115,8 +115,10 @@ mod_variant_discovery_ui <- function(id) {
       conditionalPanel(
         condition = paste0("output['", ns("is_connected"), "'] == false"),
         bslib::card(
-          bslib::card_header("Variant Analysis"),
-          bslib::card_body("Please connect to a database to use this feature.")
+          bslib::card_header("Variant Discovery"),
+          bslib::card_body(
+            "Please connect to a database to use this functionality."
+          )
         )
       ),
       conditionalPanel(
@@ -621,6 +623,20 @@ mod_variant_discovery_server <- function(id) {
       )
     })
 
+    # Close modal after manual setting
+    observeEvent(input$set_genocod_btn,{
+      removeModal()
+
+      show_alert(
+        title = "Success!",
+        text = "Gene Coordinates Set!",
+        type = "success",
+        showCloseButton = TRUE,
+        timer = 5000
+      )
+
+    })
+
     # Render UI dynamically based on choice of query
     observe({
       if (!is.null(input$query_database) && input$query_database == "q_entire") {
@@ -759,20 +775,10 @@ mod_variant_discovery_server <- function(id) {
 
 
 
-    # Download handler
-    output$download_excel <- downloadHandler(
-      filename = function() {
-        paste("dbquery", input$File_name, input$table_name, ".xlsx", sep = "_")
-      },
-      content = function(file) {
-        writexl::write_xlsx(values$query_db_val, path = file)
-      }
-    )
 
     #----------------
     # Other database queries
     #----------------
-    # This is the only UI I will have to use.
     genotype_results_ui <- function(ns) {
       bslib::card(
         # bslib::card_header("Genotype Data"),
@@ -879,6 +885,16 @@ mod_variant_discovery_server <- function(id) {
       req(values$query_geno_react)
       render_dt(values$query_geno_react)
     })
+
+    # Download handler
+    output$download_excel <- downloadHandler(
+      filename = function() {
+        paste("dbquery", input$File_name,'genotypes', ".xlsx", sep = "_")
+      },
+      content = function(file) {
+        writexl::write_xlsx(values$query_geno_react, path = file)
+      }
+    )
 
     # Design Kasp marker within variant discovery.
     # Show modal window when user decides to design kasp Marker.
