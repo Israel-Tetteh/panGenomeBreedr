@@ -5,7 +5,7 @@
 #'
 #' @param id Internal parameter for {shiny}.
 #'
-#' @return A UI definition
+#' @return A UI for Variant Discovery
 #'
 #' @noRd
 #'
@@ -18,10 +18,11 @@
 #' @importFrom shinyjs useShinyjs
 #' @importFrom DT dataTableOutput
 #' @importFrom dplyr %>%
+#'
 mod_variant_discovery_ui <- function(id) {
   ns <- NS(id)
 
-  # Reusable card styling
+  # Reusable card styling.
   card_style <- "max-width: 350px;"
   primary_card_header <- function(title) {
     bslib::card_header(class = "bg-primary text-white", title)
@@ -200,17 +201,18 @@ mod_variant_discovery_ui <- function(id) {
         label = "Allele Frequency Range",
         min = 0,
         max = 1,
-        value = c(0, 1),
+        value = c(0.05, 0.9),
         step = 0.01,
         width = "100%"
       ),
       bslib::card_footer(
-        actionButton(
-          inputId = ns("get_pcv_btn"), label = "Exract PCVs",
-          class = "btn-primary",
-          width = "100%",
-          icon = icon("filter")
-        )
+        div(style = "display: flex; justify-content: center;",
+            actionButton(
+              inputId = ns("get_pcv_btn"), label = "Extract PCVs",
+              class = "btn-primary",
+              width = "70%",
+              icon = icon("filter")
+            ))
       )
     )
   }
@@ -784,18 +786,21 @@ mod_variant_discovery_server <- function(id) {
             width = "30%"
           ),
           div(
-            style = "display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;",
-            downloadButton(
+            style = "display: flex; justify-content: space-between;
+            align-items: center; gap: 10px; width: 100%; flex-grow: 1;",
+            shinyWidgets::downloadBttn(
+              color = "primary",
+              style = "unite",
+              icon = icon("upload"),
               outputId = ns("download_excel"),
-              label = "Export to Excel",
-              class = "btn btn-primary",
-              style = "flex-grow: 1;"
+              label = "Export Genotype Matrix as .xlsx"
             ),
-            actionButton(
-              inputId = ns("push"),
-              label = "Push to KASP Marker Design Tab",
-              class = "btn-success",
-              style = "flex-grow: 1; white-space: normal;"
+            shinyWidgets::actionBttn(
+              style = "unite",
+              color = "success",
+              inputId = ns("push_1"),
+              label = "Design KASP Markers for PCVs",
+              icon = icon("dna")
             )
           )
         )
@@ -875,22 +880,241 @@ mod_variant_discovery_server <- function(id) {
       render_dt(values$query_geno_react)
     })
 
-    # Return value for KASP marker
-    return_value <- reactiveVal(NULL)
-
-    observeEvent(input$push, {
+    # Design Kasp marker within variant discovery.
+    # Show modal window when user decides to design kasp Marker.
+    observeEvent(input$push_1, {
       req(values$query_geno_react)
-      return_value(as.data.frame(values$query_geno_react))
 
-      shinyWidgets::show_toast(
-        title = "Success",
-        text = "Proceed to KASP Marker Design",
-        type = "success",
-        timer = 5000
+      showModal(
+        modalDialog(
+          title = div(
+            style = "text-align: center;",
+            "Design KASP Marker From Putative Causal Variants"
+          ),
+          size = "xl",
+          footer = modalButton("Close"),
+          fluidRow(
+            column(
+              width = 4,
+              bslib::card(
+                bslib::card_header("Analysis Parameters",
+                  class = "bg-primary text-white"
+                ),
+                bslib::card_body(
+                  fileInput(
+                    ns("modal_genome_file"),
+                    label = "Genome Reference File",
+                    accept = c(".fa", ".fasta", ".gz")
+                  ),
+                  selectizeInput(
+                    ns("modal_marker_ID"),
+                    label = "Marker ID",
+                    choices = values$query_geno_react$variant_id,
+                    options = list(placeholder = "Select a variant...")
+                  ),
+                  textInput(
+                    ns("modal_reg_name"),
+                    label = "Region Name",
+                    placeholder = "e.g., drought resistance locus"
+                  ),
+                  numericInput(
+                    ns("modal_maf"),
+                    label = "Minor Allele Frequency (MAF)",
+                    value = 0.05, min = 0, max = 1, step = 0.01
+                  ),
+                  bslib::input_switch(
+                    ns("modal_draw_plot"),
+                    label = "Generate Alignment Plot",
+                    value = TRUE
+                  )
+                ),
+                bslib::card_footer(
+                  actionButton(
+                    width = "100%",
+                    ns("modal_run_but"),
+                    label = "Design Marker",
+                    icon = icon("drafting-compass"),
+                    class = "btn-primary"
+                  )
+                )
+              )
+            ),
+            column(
+              width = 8,
+              bslib::accordion(
+                style = "margin-bottom: 70px;",
+                id = ns("results_accordion"),
+                width = "100%",
+                open = TRUE,
+                bslib::accordion_panel(
+                  "KASP Marker Data & Sequence Alignment Table",
+                  DT::dataTableOutput(ns("kasp_table")),
+                  bslib::card(
+                    bslib::card_footer(
+                      fluidRow(
+                        column(width = 3, selectInput(
+                          inputId = ns("exten"),
+                          label = "Download file as?",
+                          choices = c(".csv", ".xlsx"),
+                          selected = ".csv",
+                          multiple = FALSE
+                        )),
+                        column(
+                          width = 4,
+                          textInput(
+                            inputId = ns("file_name"),
+                            label = "Enter File Prefix",
+                            value = "Kasp M_D for Intertek"
+                          )
+                        )
+                      ),
+                      downloadButton(ns("download_table"),
+                        label = "Download File",
+                        class = "btn-success",
+                        icon = icon("download")
+                      )
+                    )
+                  )
+                ),
+                bslib::accordion(
+                  bslib::accordion_panel(
+                    "KASP Sequence Alignment Plot",
+                    plotOutput(ns("plot")),
+                    downloadButton(ns("download_plot"),
+                      label = "Download Plot (pdf)",
+                      class = "btn-success", icon = icon("download")
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
       )
     })
 
-    return(reactive(return_value()))
+    # Server Side of kasp marker design
+    kasp_design_result <- reactiveVal(NULL) # store kasp result
+
+    observeEvent(input$modal_run_but, {
+      req(
+        values$query_geno_react, input$modal_genome_file$datapath,
+        input$modal_maf, input$modal_marker_ID
+      )
+
+      shinyWidgets::show_toast(
+        title = "Designing Marker...",
+        text = "Please Wait...",
+        timer = 8000,
+        type = "info"
+      )
+
+      tryCatch(
+        {
+          # Get column names
+          gt_cols <- colnames(values$query_geno_react)
+
+          # Find column indices
+          id_col <- gt_cols[grep("id", gt_cols, ignore.case = TRUE)[1]]
+          chrom_col <- gt_cols[grep("chro", gt_cols, ignore.case = TRUE)[1]]
+          pos_col <- gt_cols[grep("pos", gt_cols, ignore.case = TRUE)[1]]
+          ref_col <- gt_cols[grep("ref", gt_cols, ignore.case = TRUE)[1]]
+          alt_col <- gt_cols[grep("alt", gt_cols, ignore.case = TRUE)[1]]
+
+          # Hard coded genotype start.
+          geno_start <- 7
+
+          # Get unique chromosomes
+          unique_chr <- unique(values$query_geno_react[[chrom_col]])
+
+          # Run KASP design
+          result_data <- kasp_marker_design_alt(
+            vcf_file = NULL,
+            gt_df = values$query_geno_react,
+            variant_id_col = id_col,
+            chrom_col = chrom_col,
+            pos_col = pos_col,
+            ref_al_col = ref_col,
+            alt_al_col = alt_col,
+            geno_start = geno_start,
+            marker_ID = input$modal_marker_ID,
+            chr = unique_chr,
+            genome_file = input$modal_genome_file$datapath,
+            plot_file = tempdir(),
+            region_name = input$modal_reg_name,
+            maf = input$modal_maf,
+            plot_draw = TRUE
+          )
+
+          kasp_design_result(result_data)
+
+          # Show success message
+          shinyWidgets::show_toast(
+            title = "Success",
+            text = "KASP marker designed successfully",
+            type = "success",
+            timer = 5000
+          )
+        },
+        error = function(e) {
+          # Show error message
+          shinyWidgets::show_toast(
+            title = "Error",
+            text = paste("Failed to design KASP marker:", e$message),
+            type = "error",
+            timer = 8000
+          )
+          kasp_design_result(NULL)
+        }
+      )
+    })
+
+    output$kasp_table <- DT::renderDT({
+      req(kasp_design_result()$marker_data)
+      render_dt(data = kasp_design_result()$marker_data)
+    })
+
+
+    # Download Kasp marker result(excel or csv.)
+    output$download_table <- downloadHandler(
+      filename = function() {
+        # Clean proposed user file name and append underscores
+        clean_name <- gsub("[^[:alnum:]_-]", "_", input$file_name)
+        paste0(clean_name, input$exten)
+      },
+      content = function(file) {
+        if (input$exten == ".csv") {
+          write.csv(kasp_design_result()$marker_data, file, row.names = FALSE)
+        } else if (input$exten == ".xlsx") {
+          openxlsx::write.xlsx(kasp_design_result()$marker_data, file)
+        }
+      }
+    )
+    # Render alignment Plot
+    output$plot <- renderPlot({
+      req(kasp_design_result())
+
+      print(kasp_design_result()$plot) # show plot
+    })
+
+    # Download Plot
+    output$download_plot <- downloadHandler(
+      filename = function() {
+        # Clean proposed user file name and append underscores
+        clean_marker <- gsub("[^[:alnum:]_-]", "_", input$modal_marker_ID)
+        paste0("alignment_", clean_marker, ".pdf")
+      },
+      content = function(file) {
+        ggplot2::ggsave(
+          filename = file,
+          plot = kasp_design_result()$plot,
+          device = "pdf",
+          width = 24,
+          height = 9,
+          units = "in"
+        )
+      }
+    )
   })
 }
 
