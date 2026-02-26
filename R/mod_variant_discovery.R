@@ -1308,7 +1308,7 @@ mod_variant_discovery_server <- function(id) {
         cat("Note: Alternate allele frequency for this impact level is unavailable due to missing or invalid data.")
       } else {
         cat(
-          "Note: Alternate allele frequency for this impact level is between",
+          "Alternate allele frequency range:",
           alt_af_range[1], "-",
           alt_af_range[2]
         )
