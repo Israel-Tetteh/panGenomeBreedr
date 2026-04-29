@@ -35,6 +35,7 @@ Language: en-US
 Imports: 
     bslib,
     DBI,
+    RPostgres,
     ggplot2,
     golem,
     gridExtra,
@@ -67,6 +68,10 @@ Suggests:
     shinyalert,
     shinybusy,
     shinyFiles,
+    dittodb,
+    scales,
+    leaflet,
+    tools,
     shinyjs,
     shinyWidgets,
     testthat (>= 3.0.0),

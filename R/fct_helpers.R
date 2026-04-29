@@ -3,10 +3,6 @@
 #' This file contains various helper functions used throughout the application.
 #' Functions are organized by their purpose and usage context.
 #' None of these functions are exported as they're meant for internal use only.
-
-#-----------------------------------------------------------------------------
-# VCF File Processing Functions (KASP Marker design section)
-#-----------------------------------------------------------------------------
 #' Extract Marker IDs and Chromosome IDs from VCF File
 #'
 #' This function reads a VCF file and extracts all unique marker IDs and chromosome IDs.
