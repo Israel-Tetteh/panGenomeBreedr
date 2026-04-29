@@ -536,6 +536,7 @@ pg_query_db <- function(
 
 
 
+
 #' Get the genomic range of a candidate gene using the Sobic ID from a GFF file
 #'
 #' This function parses a GFF3 file to extract the chromosome, start, and
@@ -754,6 +755,7 @@ pg_query_by_impact <- function(
 
   return(result)
 }
+
 
 
 
