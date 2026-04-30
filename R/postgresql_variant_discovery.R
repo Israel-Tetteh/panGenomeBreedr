@@ -1,3 +1,40 @@
+#' Connect to the panGenomeBreedr Database
+#'
+#' @param host The database endpoint. Defaults to the 'PG_HOST' environment variable.
+#' @param dbname The database name. Defaults to 'postgres'.
+#' @param user The username. Defaults to 'postgres'.
+#' @param password The database password. Defaults to the 'PG_PASS' environment variable.
+#' @param port The port number. Defaults to 5432.
+#'
+#' @return A DBI connection object.
+#' @export
+pg_connect <- function(host = Sys.getenv("PG_HOST", "sorghum-pangenome-minidb-1.c5mc44mggq2r.eu-north-1.rds.amazonaws.com"),
+                       dbname = "postgres",
+                       user = "postgres",
+                       password = Sys.getenv("PG_PASS", "pangbdatabase"),
+                       port = 5432) {
+
+  # Attempt to establish connection
+  con <- tryCatch({
+    DBI::dbConnect(
+      RPostgres::Postgres(),
+      dbname = dbname,
+      host = host,
+      port = port,
+      user = user,
+      password = password,
+      sslmode = "require"
+    )
+  }, error = function(e) {
+    stop(paste("Failed to connect to the database. Check your internet connection.\nError:", e$message))
+  })
+
+  return(con)
+}
+
+
+
+
 #' List all tables in the PostgreSQL database
 #'
 #' This function connects to the PostgreSQL server and retrieves the names of
