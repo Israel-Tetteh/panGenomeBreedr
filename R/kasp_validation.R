@@ -120,10 +120,9 @@ read_kasp_csv <- function(file,
 #' @returns A list object with `length = 2` consisting of marker alleles and
 #' possible genotypes in \code{x}.
 #' @export
-#'
 get_alleles <- function(x,
                         sep = ':',
-                        data_type = c('kasp', 'agriplex')){
+                        data_type = c('kasp', 'agriplex')) {
 
   data_type <- match.arg(data_type) # Match arguments
 
@@ -131,69 +130,61 @@ get_alleles <- function(x,
   res <- vector(mode = 'list', length = 2)
   names(res) <- c('alleles', 'genotypes')
 
-  # Subset and sort genotype calls
+  # Helper function to validate if a string represents DNA/InDel/Degenerate bases
   is_dna <- function(a) {
-    a <- toupper(trimws(a))                 #
-    ok <- (a %in% c("INS", "DEL", "-")) | grepl("^[ACGT]+$", a)
+    a <- toupper(trimws(a))
+    # Standard: A,C,G,T
+    # InDels: INS, DEL, -
+    # IUPAC Degenerate: R, Y, S, W, K, M, B, D, H, V, N
+    pattern <- "^[ACGTRYSWKMBDHVN-]+$"
+
+    ok <- (a %in% c("INS", "DEL")) | grepl(pattern, a)
     ok[is.na(a)] <- FALSE
     ok
   }
 
+  # Filter for valid genotype strings based on the separator and content
   keep_1 <- !is.na(x) & vapply(strsplit(x, sep, fixed = TRUE), function(z) {
+    # Check if we have two components and both are valid DNA strings
     length(z) == 2 && all(is_dna(z))
   }, logical(1))
 
   geno_uniq <- sort(unique(x[keep_1]))
-  alleles <- res[[1]] <- unique(unlist(strsplit(x = geno_uniq, split = sep)))
 
-  if (length(alleles) == 2) {
+  # Extract unique alleles found in valid genotypes
+  alleles <- unique(unlist(strsplit(x = geno_uniq, split = sep)))
+  res[[1]] <- alleles
 
-    if (data_type == 'kasp') {
+  # Initialize genotype placeholders
+  homo1 <- homo2 <- het1 <- het2 <- NULL
 
-      homo1 <- paste(alleles[1], alleles[1], sep = sep) # homozygous genotype 1
-      homo2 <- paste(alleles[2], alleles[2], sep = sep) # homozygous genotype 2
-      het1 <- paste(alleles[1], alleles[2], sep = sep) # heterozygous genotype 1
-      het2 <- paste(alleles[2], alleles[1], sep = sep) # heterozygous genotype 2
-
-    } else {
-
-      homo1 <- paste(alleles[1]) # homozygous genotype 1
-      homo2 <- paste(alleles[2]) # homozygous genotype 2
-      het1 <- paste(alleles[1], alleles[2], sep = sep) # heterozygous genotype 1
-      het2 <- paste(alleles[2], alleles[1], sep = sep) # heterozygous genotype 2
-
-    }
-
-  } else if (length(alleles == 1)) {
+  if (length(alleles) >= 2) {
+    # If multiple alleles are found, we take the first two to define the primary model
+    a1 <- alleles[1]
+    a2 <- alleles[2]
 
     if (data_type == 'kasp') {
-
-      homo1 <- homo2 <- paste(alleles[1], alleles[1], sep = sep) # homozygous genotype 1
-      het1 <- het2 <- paste(alleles[1], alleles[1], sep = sep) # heterozygous genotype 1
-
+      homo1 <- paste(a1, a1, sep = sep)
+      homo2 <- paste(a2, a2, sep = sep)
     } else {
-
-      homo1 <- homo2 <- paste(alleles[1]) # homozygous genotype 1
-      het1 <- het2 <- paste(alleles[1], alleles[1], sep = sep) # heterozygous genotype 1
-
+      homo1 <- a1
+      homo2 <- a2
     }
+    het1 <- paste(a1, a2, sep = sep)
+    het2 <- paste(a2, a1, sep = sep)
 
-  } else if (is.null(alleles)) {
+  } else if (length(alleles) == 1) {
+    a1 <- alleles[1]
 
     if (data_type == 'kasp') {
-
-      homo1 <- homo2 <- het1 <- het2 <- NULL
-
+      homo1 <- homo2 <- het1 <- het2 <- paste(a1, a1, sep = sep)
     } else {
-
-      homo1 <- homo2 <- het1 <- het2 <- NULL
-
+      homo1 <- homo2 <- a1
+      het1 <- het2 <- paste(a1, a1, sep = sep)
     }
-
   }
 
   res[[2]] <- c(homo1 = homo1, homo2 = homo2, het1 = het1, het2 = het2)
-
 
   return(res)
 }
