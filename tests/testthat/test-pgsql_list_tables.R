@@ -1,4 +1,4 @@
-test_that("pg_list_tables returns expected table names from mock DB", {
+test_that("pgsql_list_tables returns expected table names from mock DB", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -15,7 +15,7 @@ test_that("pg_list_tables returns expected table names from mock DB", {
       )
 
       # List tables
-      table_names <- pg_list_tables(con)
+      table_names <- pgsql_list_tables(con)
 
       # Validate results
       expect_type(table_names, "character")
@@ -28,14 +28,14 @@ test_that("pg_list_tables returns expected table names from mock DB", {
   })
 })
 
-test_that("pg_list_tables throws error on invalid connection", {
+test_that("pgsql_list_tables throws error on invalid connection", {
   # Create connection and close to invalidate
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   DBI::dbDisconnect(con)
 
   # Check error handling
   expect_error(
-    pg_list_tables(con),
+    pgsql_list_tables(con),
     "The provided database connection is not valid"
   )
 })

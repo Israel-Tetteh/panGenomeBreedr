@@ -1,4 +1,4 @@
-test_that("pg_count_variant_types retrieves variant distribution from mock DB", {
+test_that("pgsql_count_variant_types retrieves variant distribution from mock DB", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -13,7 +13,7 @@ test_that("pg_count_variant_types retrieves variant distribution from mock DB", 
       )
 
       # Execute
-      res <- pg_count_variant_types(con)
+      res <- pgsql_count_variant_types(con)
 
       # Structural Check
       expect_s3_class(res, "data.frame")
@@ -31,20 +31,20 @@ test_that("pg_count_variant_types retrieves variant distribution from mock DB", 
   })
 })
 
-test_that("pg_count_variant_types handles missing tables and columns", {
+test_that("pgsql_count_variant_types handles missing tables and columns", {
   # Logic check using SQLite (No fixtures required)
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
   # Table doesn't exist
   expect_error(
-    pg_count_variant_types(con, variants_table = "ghost_table"),
+    pgsql_count_variant_types(con, variants_table = "ghost_table"),
     "does not exist in the database"
   )
 
   # Test: Column 'variant_type' is missing
   DBI::dbExecute(con, "CREATE TABLE variants (chrom TEXT, pos INTEGER)")
   expect_error(
-    pg_count_variant_types(con, variants_table = "variants"),
+    pgsql_count_variant_types(con, variants_table = "variants"),
     "does not have a 'variant_type' column"
   )
 

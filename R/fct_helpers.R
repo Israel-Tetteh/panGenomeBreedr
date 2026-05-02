@@ -1242,3 +1242,89 @@ makeTraitInput <- function(id, ns) {
     }
   )
 }
+
+
+
+#' Render a Ghost Plate Error Plot
+#'
+#' @description This function generates a stylized ggplot2 plot that visually
+#' represents a plate layout error. It displays a "ghost" plate background 
+#' with an overlayed error message.
+#'
+#' @param error_msg A character string containing the specific error message to display.
+#' @param text_size A numeric value controlling the size of the text elements in the plot.
+#' @return A ggplot2 object representing the error plot.
+#' @noRd
+render_ghost_plate_error <- function(error_msg, text_size = 12) {
+  
+  # Data setup
+  ghost_data <- expand.grid(
+    row = factor(rev(LETTERS[1:8])), 
+    col = factor(sprintf("%02d", 1:12))
+  )
+
+  # Color Palette
+  well_grey   <- "#F1F2F6"
+  stroke_grey <- "#CED4DA"
+  grid_grey   <- "#E9ECEF"
+  text_dark   <- "#2D3436"
+  error_red   <- "#D63031"
+
+  ggplot2::ggplot(ghost_data, ggplot2::aes(x = col, y = row)) +
+    # Draw the empty grid
+    ggplot2::geom_tile(fill = "white", color = grid_grey, linewidth = 0.5) +
+    
+    # Draw the empty wells
+    ggplot2::geom_point(
+      size = text_size,
+      shape = 21,
+      fill = well_grey,
+      color = stroke_grey,
+      stroke = 1,
+      alpha = 0.8
+    ) +
+    
+    # Semi-transparent overlay to "de-emphasize" the background
+    ggplot2::annotate(
+      "rect",
+      xmin = -Inf, xmax = Inf,
+      ymin = -Inf, ymax = Inf,
+      fill = "white",
+      alpha = 0.3
+    ) +
+    
+    # Labels and Theme setup
+    ggplot2::scale_x_discrete(position = "top") +
+    ggplot2::labs(title = "PLATE LAYOUT ERROR") +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.line = ggplot2::element_blank(),
+      axis.title = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      plot.title = ggplot2::element_text(
+        hjust = 0.5,
+        face = "bold",
+        size = text_size,
+        color = error_red
+      ),
+      axis.text = ggplot2::element_text(
+        size = text_size,
+        face = "bold",
+        color = "#B2BEC3"
+      )
+    ) +
+    
+    # Central Error Message Label
+    ggplot2::annotate(
+      "label",
+      x = 6.5,
+      y = 4.5,
+      label = paste0("VALIDATION FAILED:\n", error_msg),
+      fill = "white",
+      color = text_dark,
+      size = text_size * 0.35,
+      fontface = "bold",
+      label.padding = ggplot2::unit(1, "lines")
+    )
+}
+

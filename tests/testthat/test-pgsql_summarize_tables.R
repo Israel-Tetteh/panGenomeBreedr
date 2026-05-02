@@ -1,4 +1,4 @@
-test_that("pg_summarize_tables returns correct row counts from mock DB", {
+test_that("pgsql_summarize_tables returns correct row counts from mock DB", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -14,7 +14,7 @@ test_that("pg_summarize_tables returns correct row counts from mock DB", {
       )
 
       # Execute summary
-      summary_df <- pg_summarize_tables(con)
+      summary_df <- pgsql_summarize_tables(con)
 
       # Validate structure
       expect_s3_class(summary_df, "data.frame")

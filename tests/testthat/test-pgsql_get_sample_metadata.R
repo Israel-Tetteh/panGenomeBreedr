@@ -1,4 +1,4 @@
-test_that("pg_get_sample_metadata logic holds in SQLite (Mock-independent)", {
+test_that("pgsql_get_sample_metadata logic holds in SQLite (Mock-independent)", {
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
   # Ensure connection is closed cleanly
@@ -17,7 +17,7 @@ test_that("pg_get_sample_metadata logic holds in SQLite (Mock-independent)", {
   )
 
   # Test filtering logic
-  res <- pg_get_sample_metadata(
+  res <- pgsql_get_sample_metadata(
     con,
     query_col = "countryorigin",
     query_value = "Ghana"

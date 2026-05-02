@@ -37,10 +37,10 @@ you to install them before plotting.
 library(panGenomeBreedr)
 
 # Fetch sample metadata from the database
-meta <- pg_get_sample_metadata(con)
+meta <- pgsql_get_sample_metadata(con)
 
 # Explore the geographic distribution colored by genetic cluster
-pg_map_accessions(meta, color_by = "kmeans_cluster")
+pgsql_map_accessions(meta, color_by = "kmeans_cluster")
 }
 
 }

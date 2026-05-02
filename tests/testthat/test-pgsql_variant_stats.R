@@ -1,4 +1,4 @@
-test_that("pg_variant_stats returns correct summary structure from mock DB", {
+test_that("pgsql_variant_stats returns correct summary structure from mock DB", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -14,7 +14,7 @@ test_that("pg_variant_stats returns correct summary structure from mock DB", {
       )
 
       #  Test full stats 
-      stats_all <- pg_variant_stats(con, include_annotations = TRUE)
+      stats_all <- pgsql_variant_stats(con, include_annotations = TRUE)
 
       # Validate structure
       expect_s3_class(stats_all, "data.frame")
@@ -32,7 +32,7 @@ test_that("pg_variant_stats returns correct summary structure from mock DB", {
       }
 
       # Test base stats only 
-      stats_base <- pg_variant_stats(con, include_annotations = FALSE)
+      stats_base <- pgsql_variant_stats(con, include_annotations = FALSE)
 
       # Ensure optional column is absent
       expect_false("n_annotated" %in% colnames(stats_base))

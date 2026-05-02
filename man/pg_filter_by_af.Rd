@@ -33,21 +33,22 @@ A data frame containing variant metadata and calculated frequencies
 }
 \description{
 Calculates allele frequencies for a genotype matrix and filters variants
-based on a user-defined range. Useful for removing monomorphic or
-rare variants from pangenome queries.
+based on a user-defined range locally on your machine. Useful for removing
+monomorphic or rare variants from pangenome queries.
 }
 \examples{
 \dontrun{
 library(panGenomeBreedr)
-library(DBI)
 
-con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
-
-# Query region and pipe into filter to remove rare variants (MAF < 0.05)
-filtered_vars <- pg_query_db(con, "genotypes", "Chr05", 75104537, 75106403) |>
+# Query region via the API and pipe into filter to remove rare variants (MAF < 0.05)
+# Notice: No database connection needed!
+filtered_vars <- pg_query_db(
+  table_name = "genotypes",
+  chrom = "Chr05",
+  start = 75104537,
+  end = 75106403
+) |>
   pg_filter_by_af(min_af = 0.05, max_af = 0.95)
-
-dbDisconnect(con)
 }
 
 }

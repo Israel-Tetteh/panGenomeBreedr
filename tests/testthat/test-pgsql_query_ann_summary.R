@@ -1,4 +1,4 @@
-test_that("pg_query_ann_summary returns a valid list of summaries", {
+test_that("pgsql_query_ann_summary returns a valid list of summaries", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -13,7 +13,7 @@ test_that("pg_query_ann_summary returns a valid list of summaries", {
       )
 
       # Use recorded coordinates
-      res <- pg_query_ann_summary(
+      res <- pgsql_query_ann_summary(
         con,
         chrom = "Chr03",
         start = 79037800,
@@ -41,7 +41,7 @@ test_that("pg_query_ann_summary returns a valid list of summaries", {
   })
 })
 
-test_that("pg_query_ann_summary handles missing tables correctly", {
+test_that("pgsql_query_ann_summary handles missing tables correctly", {
   # Logic check using SQLite (No fixtures required)
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
@@ -50,7 +50,7 @@ test_that("pg_query_ann_summary handles missing tables correctly", {
 
   # Tables don't exist yet, so we expect the dynamic error message
   expect_error(
-    pg_query_ann_summary(con, chrom = "Chr01", start = 1, end = 100),
+    pgsql_query_ann_summary(con, chrom = "Chr01", start = 1, end = 100),
     "Table 'annotations' not found"
   )
 })

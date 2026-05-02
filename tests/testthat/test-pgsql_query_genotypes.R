@@ -1,4 +1,4 @@
-test_that("pg_query_genotypes retrieves and unpacks specific variant IDs", {
+test_that("pgsql_query_genotypes retrieves and unpacks specific variant IDs", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -16,7 +16,7 @@ test_that("pg_query_genotypes retrieves and unpacks specific variant IDs", {
       my_ids <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
 
       # Execute
-      res <- pg_query_genotypes(con, variant_ids = my_ids)
+      res <- pgsql_query_genotypes(con, variant_ids = my_ids)
 
       # Structural Check
       expect_s3_class(res, "data.frame")
@@ -34,7 +34,7 @@ test_that("pg_query_genotypes retrieves and unpacks specific variant IDs", {
   })
 })
 
-test_that("pg_query_genotypes handles missing IDs and warnings correctly", {
+test_that("pgsql_query_genotypes handles missing IDs and warnings correctly", {
   # Logic check using SQLite
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
@@ -51,14 +51,14 @@ test_that("pg_query_genotypes handles missing IDs and warnings correctly", {
 
   # Test empty ID warning (Updated from expect_error to expect_warning)
   expect_warning(
-    res_empty_input <- pg_query_genotypes(con, variant_ids = character(0)),
+    res_empty_input <- pgsql_query_genotypes(con, variant_ids = character(0)),
     "The 'variant_ids' vector is empty"
   )
   expect_equal(nrow(res_empty_input), 0)
 
   # Test warning for IDs not in database
   expect_warning(
-    res_not_found <- pg_query_genotypes(con, variant_ids = c("non_existent_id")),
+    res_not_found <- pgsql_query_genotypes(con, variant_ids = c("non_existent_id")),
     "No data found"
   )
   expect_equal(nrow(res_not_found), 0)

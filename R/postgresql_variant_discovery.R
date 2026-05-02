@@ -1,33 +1,52 @@
 #' Connect to the panGenomeBreedr Database
 #'
-#' @param host The database endpoint. Defaults to the 'PG_HOST' environment variable.
-#' @param dbname The database name. Defaults to 'postgres'.
-#' @param user The username. Defaults to 'postgres'.
-#' @param password The database password. Defaults to the 'PG_PASS' environment variable.
+#' @param host The database endpoint. Defaults to the 'PGSQL_HOST' environment variable.
+#' @param dbname The database name. Defaults to the 'PGSQL_DBNAME' environment variable or 'postgres'.
+#' @param user The username. Defaults to the 'PGSQL_USER' environment variable or 'postgres'.
+#' @param password The database password. Defaults to the 'PGSQL_PASS' environment variable.
 #' @param port The port number. Defaults to 5432.
 #'
 #' @return A DBI connection object.
-#' @export
-pg_connect <- function(host = Sys.getenv("PG_HOST", "sorghum-pangenome-minidb-1.c5mc44mggq2r.eu-north-1.rds.amazonaws.com"),
-                       dbname = "postgres",
-                       user = "postgres",
-                       password = Sys.getenv("PG_PASS", "pangbdatabase"),
-                       port = 5432) {
+#' @noRd
+pgsql_connect <- function(
+  host = Sys.getenv("PGSQL_HOST"),
+  dbname = Sys.getenv("PGSQL_DBNAME", "postgres"),
+  user = Sys.getenv("PGSQL_USER", "postgres"),
+  password = Sys.getenv("PGSQL_PASS"),
+  port = 5432
+) {
+  # Prevent silent local connections
+  if (host == "") {
+    stop(
+      "Database host not found. Please set 'PGSQL_HOST' in your .Renviron file (e.g., using usethis::edit_r_environ())."
+    )
+  }
+  if (password == "") {
+    stop(
+      "Database password not found. Please set 'PGSQL_PASS' in your .Renviron file."
+    )
+  }
 
   # Attempt to establish connection
-  con <- tryCatch({
-    DBI::dbConnect(
-      RPostgres::Postgres(),
-      dbname = dbname,
-      host = host,
-      port = port,
-      user = user,
-      password = password,
-      sslmode = "require"
-    )
-  }, error = function(e) {
-    stop(paste("Failed to connect to the database. Check your internet connection.\nError:", e$message))
-  })
+  con <- tryCatch(
+    {
+      DBI::dbConnect(
+        RPostgres::Postgres(),
+        dbname = dbname,
+        host = host,
+        port = port,
+        user = user,
+        password = password,
+        sslmode = "require"
+      )
+    },
+    error = function(e) {
+      stop(paste(
+        "Failed to connect to the database. Check your internet connection, VPN, or credentials.\nError:",
+        e$message
+      ))
+    }
+  )
 
   return(con)
 }
@@ -60,16 +79,17 @@ pg_connect <- function(host = Sys.getenv("PG_HOST", "sorghum-pangenome-minidb-1.
 #'                  user = "israeltawiahtetteh")
 #'
 #' # List tables
-#' pg_list_tables(con)
+#' pgsql_list_tables(con)
 #'
 #' # Disconnect
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_list_tables <- function(con) {
+#' @noRd
+pgsql_list_tables <- function(con) {
   # Mock check for unit testing compatibility with dittodb.
   if (!inherits(con, "DBIMockConnection")) {
     if (!DBI::dbIsValid(con)) {
@@ -117,16 +137,17 @@ pg_list_tables <- function(con) {
 #'                  user = "israeltawiahtetteh")
 #'
 #' # Get chromosome-level statistics
-#' stats <- pg_variant_stats(con, include_annotations = TRUE)
+#' stats <- pgsql_variant_stats(con, include_annotations = TRUE)
 #' print(stats)
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_variant_stats <- function(con, include_annotations = TRUE) {
+#' @noRd
+pgsql_variant_stats <- function(con, include_annotations = TRUE) {
   # Mock check for unit testing compatibility with dittodb.
   if (!inherits(con, "DBIMockConnection")) {
     if (!DBI::dbIsValid(con)) {
@@ -197,17 +218,18 @@ pg_variant_stats <- function(con, include_annotations = TRUE) {
 #'                  user = "israeltawiahtetteh")
 #'
 #' # Generate impact summary
-#' impact_stats <- pg_variant_impact_summary(con)
+#' impact_stats <- pgsql_variant_impact_summary(con)
 #' head(impact_stats)
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom stats reshape
 #' @importFrom RPostgres Postgres
-pg_variant_impact_summary <- function(con) {
+#' @noRd
+pgsql_variant_impact_summary <- function(con) {
   # Mock check for unit testing compatibility with dittodb.
   if (!inherits(con, "DBIMockConnection")) {
     if (!DBI::dbIsValid(con)) {
@@ -281,16 +303,17 @@ pg_variant_impact_summary <- function(con) {
 #'                  user = "israeltawiahtetteh")
 #'
 #' # Summarize all tables
-#' db_summary <- pg_summarize_tables(con)
+#' db_summary <- pgsql_summarize_tables(con)
 #' print(db_summary)
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_summarize_tables <- function(con) {
+#' @noRd
+pgsql_summarize_tables <- function(con) {
   # Mock check for unit testing compatibility with dittodb.
   if (!inherits(con, "DBIMockConnection")) {
     if (!DBI::dbIsValid(con)) {
@@ -361,15 +384,16 @@ pg_summarize_tables <- function(con) {
 #'                  user = "israeltawiahtetteh")
 #'
 #' # Check the genotypes table to verify the new array type
-#' pg_list_table_columns(con, table_name = "genotypes")
+#' pgsql_list_table_columns(con, table_name = "genotypes")
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_list_table_columns <- function(
+#' @noRd
+pgsql_list_table_columns <- function(
   con,
   table_name = c("variants", "annotations", "genotypes", "metadata")
 ) {
@@ -442,10 +466,10 @@ pg_list_table_columns <- function(
 #' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
 #'
 #' # Query a gene region in genotypes
-#' gt_data <- pg_query_db(con, "genotypes", "Chr05", 75104537, 75106403)
+#' gt_data <- pgsql_query_db(con, "genotypes", "Chr05", 75104537, 75106403)
 #'
 #' # Query annotations for a specific gene ID
-#' ann_data <- pg_query_db(
+#' ann_data <- pgsql_query_db(
 #'   con = con,
 #'   table_name = "annotations",
 #'   chrom = "Chr05",
@@ -457,10 +481,11 @@ pg_list_table_columns <- function(
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_query_db <- function(
+#' @noRd
+pgsql_query_db <- function(
   con,
   table_name = c("variants", "annotations", "genotypes"),
   chrom = NULL,
@@ -598,8 +623,9 @@ pg_query_db <- function(
 #' print(coords)
 #' }
 #'
-#' @export
+#'
 #' @importFrom R.utils isUrl isGzipped gunzip
+#' @export
 pg_gene_coords <- function(gene_name, gff_path) {
   # We handle remote URLs by downloading the file to a temporary location first.
   if (R.utils::isUrl(gff_path)) {
@@ -713,7 +739,7 @@ pg_gene_coords <- function(gene_name, gff_path) {
 #' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
 #'
 #' # Get only high-impact variants on Chromosome 5
-#'  high_impact_vars <- pg_query_by_impact(
+#'  high_impact_vars <- pgsql_query_by_impact(
 #'  con = con,
 #'  impact_level = "HIGH",
 #'  chrom = 'Chr05',
@@ -724,10 +750,11 @@ pg_gene_coords <- function(gene_name, gff_path) {
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_query_by_impact <- function(
+#' @noRd
+pgsql_query_by_impact <- function(
   con,
   impact_level = c("HIGH", "MODERATE", "LOW", "MODIFIER"),
   chrom = NULL,
@@ -815,8 +842,6 @@ pg_query_by_impact <- function(
 #'   \item \code{ref_af}: Reference allele frequency.
 #'   \item \code{alt_af}: Alternate allele frequency.
 #' }
-#'
-#'
 #' @export
 pg_calc_af <- function(
   gt,
@@ -879,8 +904,8 @@ pg_calc_af <- function(
 #' Filter extracted variants based on alternate allele frequency
 #'
 #' Calculates allele frequencies for a genotype matrix and filters variants
-#' based on a user-defined range. Useful for removing monomorphic or
-#' rare variants from pangenome queries.
+#' based on a user-defined range locally on your machine. Useful for removing
+#' monomorphic or rare variants from pangenome queries.
 #'
 #' @param gt A data frame or matrix of variants x samples, typically
 #'   the output from \code{\link{pg_query_db}}.
@@ -896,15 +921,16 @@ pg_calc_af <- function(
 #' @examples
 #' \dontrun{
 #' library(panGenomeBreedr)
-#' library(DBI)
 #'
-#' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
-#'
-#' # Query region and pipe into filter to remove rare variants (MAF < 0.05)
-#' filtered_vars <- pg_query_db(con, "genotypes", "Chr05", 75104537, 75106403) |>
+#' # Query region via the API and pipe into filter to remove rare variants (MAF < 0.05)
+#' # Notice: No database connection needed!
+#' filtered_vars <- pg_query_db(
+#'   table_name = "genotypes",
+#'   chrom = "Chr05",
+#'   start = 75104537,
+#'   end = 75106403
+#' ) |>
 #'   pg_filter_by_af(min_af = 0.05, max_af = 0.95)
-#'
-#' dbDisconnect(con)
 #' }
 #'
 #' @export
@@ -921,7 +947,7 @@ pg_filter_by_af <- function(
     stop("The genotype matrix is empty or NULL.")
   }
 
-  # compute allele frequencies
+  # compute allele frequencies (Using your local function)
   af_results <- pg_calc_af(
     gt = gt,
     variant_id_col = variant_id_col,
@@ -946,7 +972,6 @@ pg_filter_by_af <- function(
 
 
 
-
 #' Extract variants based on allele frequencies within a genomic region
 #'
 #' This function queries the PostgreSQL database for genotypes within a specific
@@ -964,8 +989,8 @@ pg_filter_by_af <- function(
 #'
 #' @details
 #' The function acts as a high-level wrapper that coordinates data retrieval
-#' and frequency filtering. It first pulls raw genotypes using \code{\link{pg_query_db}}
-#' and then applies the vectorized frequency logic from \code{\link{pg_filter_by_af}}.
+#' and frequency filtering. It first pulls raw genotypes using \code{\link{pgsql_query_db}}
+#' and then applies the vectorized frequency logic from \code{\link{pgsql_filter_by_af}}.
 #'
 #' @examples
 #' \dontrun{
@@ -975,7 +1000,7 @@ pg_filter_by_af <- function(
 #' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
 #'
 #' # Get variants on Chr05 with AF between 5% and 50%
-#' common_vars <- pg_query_by_af(con,
+#' common_vars <- pgsql_query_by_af(con,
 #'                               min_af = 0.05,
 #'                               max_af = 0.50,
 #'                               chrom = "Chr05",
@@ -985,10 +1010,11 @@ pg_filter_by_af <- function(
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_query_by_af <- function(
+#' @noRd
+pgsql_query_by_af <- function(
   con,
   min_af = 0,
   max_af = 1,
@@ -1013,7 +1039,7 @@ pg_query_by_af <- function(
 
   # Retrieve the expanded genotype matrix for the requested genomic window.
   # This returns the individual sample columns required for frequency math.
-  gt_data <- pg_query_db(
+  gt_data <- pgsql_query_db(
     con = con,
     table_name = "genotypes",
     chrom = chrom,
@@ -1071,15 +1097,16 @@ pg_query_by_af <- function(
 #'
 #' # Query specific variants
 #' my_ids <- c("SNP_Chr05_75104557", "INDEL_Chr05_75104541")
-#' df <- pg_query_genotypes(con, variant_ids = my_ids)
+#' df <- pgsql_query_genotypes(con, variant_ids = my_ids)
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_query_genotypes <- function(
+#' @noRd
+pgsql_query_genotypes <- function(
   con,
   variant_ids,
   variant_id_col = "variant_id",
@@ -1178,16 +1205,17 @@ pg_query_genotypes <- function(
 #' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
 #'
 #' # Get the SNP vs INDEL breakdown
-#' type_counts <- pg_count_variant_types(con)
+#' type_counts <- pgsql_count_variant_types(con)
 #' print(type_counts)
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_count_variant_types <- function(con, variants_table = "variants") {
+#' @noRd
+pgsql_count_variant_types <- function(con, variants_table = "variants") {
   # Mock check for unit testing compatibility with dittodb.
   if (!inherits(con, "DBIMockConnection")) {
     if (!DBI::dbIsValid(con)) {
@@ -1263,7 +1291,7 @@ pg_count_variant_types <- function(con, variants_table = "variants") {
 #' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
 #'
 #' # Summarize a 2kb region on Chromosome 5
-#' region_summary <- pg_query_ann_summary(con,
+#' region_summary <- pgsql_query_ann_summary(con,
 #'                                        chrom = "Chr05",
 #'                                        start = 75104537,
 #'                                        end = 75106403)
@@ -1274,10 +1302,11 @@ pg_count_variant_types <- function(con, variants_table = "variants") {
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_query_ann_summary <- function(
+#' @noRd
+pgsql_query_ann_summary <- function(
   con,
   chrom,
   start,
@@ -1388,17 +1417,18 @@ pg_query_ann_summary <- function(
 #' con <- dbConnect(RPostgres::Postgres(), dbname = "sorghum_pangenome_db")
 #'
 #' # Fetch metadata for all accessions originating from Ghana
-#' ghana_samples <- pg_get_sample_metadata(con,
+#' ghana_samples <- pgsql_get_sample_metadata(con,
 #'                                         query_col = "countryorigin",
 #'                                         query_value = "Ghana")
 #'
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import DBI
 #' @importFrom RPostgres Postgres
-pg_get_sample_metadata <- function(con, query_col = NULL, query_value = NULL) {
+#' @noRd
+pgsql_get_sample_metadata <- function(con, query_col = NULL, query_value = NULL) {
     # Mock check for unit testing compatibility with dittodb.
   if (!inherits(con, "DBIMockConnection")) {
     if (!DBI::dbIsValid(con)) {
@@ -1453,17 +1483,17 @@ pg_get_sample_metadata <- function(con, query_col = NULL, query_value = NULL) {
 #' @examples
 #' \dontrun{
 #' # Get genotypes for a gene, but only for samples from Ethiopia
-#' eth_genotypes <- pg_query_by_metadata(con,
+#' eth_genotypes <- pgsql_query_by_metadata(con,
 #'                                       chrom = "Chr05",
 #'                                       start = 75104537, end = 75106403,
 #'                                       meta_col = "countryorigin",
 #'                                       meta_value = "Ethiopia")
 #' }
 #'
-#' @export
-pg_query_by_metadata <- function(con, chrom, start, end, meta_col, meta_value) {
+#' @noRd
+pgsql_query_by_metadata <- function(con, chrom, start, end, meta_col, meta_value) {
   # Get samples that match the metadata criteria using 'lib' names and 'array_index'
-  sample_info <- pg_get_sample_metadata(con, meta_col, meta_value)
+  sample_info <- pgsql_get_sample_metadata(con, meta_col, meta_value)
 
   if (nrow(sample_info) == 0) {
     stop(
@@ -1478,7 +1508,7 @@ pg_query_by_metadata <- function(con, chrom, start, end, meta_col, meta_value) {
   sample_names <- sample_info$lib
 
   # Fetch the raw data for the region
-  raw_data <- pg_query_db(
+  raw_data <- pgsql_query_db(
     con,
     table_name = "genotypes",
     chrom = chrom,
@@ -1526,10 +1556,10 @@ pg_query_by_metadata <- function(con, chrom, start, end, meta_col, meta_value) {
 #' library(panGenomeBreedr)
 #'
 #' # Fetch sample metadata from the database
-#' meta <- pg_get_sample_metadata(con)
+#' meta <- pgsql_get_sample_metadata(con)
 #'
 #' # Explore the geographic distribution colored by genetic cluster
-#' pg_map_accessions(meta, color_by = "kmeans_cluster")
+#' pgsql_map_accessions(meta, color_by = "kmeans_cluster")
 #' }
 #'
 #' @export
@@ -1646,7 +1676,7 @@ pg_map_accessions <- function(metadata, color_by = "countryorigin") {
 #' my_pheno <- read.csv("sorghum_awn_data.csv")
 #'
 #' # Audit a specific INDEL for association with glume coverage
-#' pg_plot_trait_association(con,
+#' pgsql_plot_trait_association(con,
 #'                           variant_id = "INDEL_Chr01_67040781",
 #'                           pheno_df = my_pheno,
 #'                           trait_col = "glume_coverage",
@@ -1655,11 +1685,12 @@ pg_map_accessions <- function(metadata, color_by = "countryorigin") {
 #' dbDisconnect(con)
 #' }
 #'
-#' @export
+#'
 #' @import ggplot2
 #' @import DBI
 #' @import stats
-pg_plot_trait_association <- function(
+#' @noRd
+pgsql_plot_trait_association <- function(
   con,
   variant_id,
   pheno_df,
@@ -1686,7 +1717,7 @@ pg_plot_trait_association <- function(
   }
 
   # Pull genotype data using the package's core query engine
-  gt_data <- pg_query_genotypes(con, variant_ids = variant_id)
+  gt_data <- pgsql_query_genotypes(con, variant_ids = variant_id)
   if (nrow(gt_data) == 0) {
     stop(paste(
       "Variant ID",
@@ -1824,7 +1855,3 @@ pg_plot_trait_association <- function(
 
   return(p)
 }
-
-
-
-

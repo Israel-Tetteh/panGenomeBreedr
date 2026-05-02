@@ -1,4 +1,4 @@
-test_that("pg_query_by_af filtering logic works independently of DB", {
+test_that("pgsql_query_by_af filtering logic works independently of DB", {
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
   # Setup dummy tables
@@ -26,7 +26,7 @@ test_that("pg_query_by_af filtering logic works independently of DB", {
   # Wrap the call in expect_warning to catch the expected "No variants passed" message
   expect_warning(
     {
-      res_none <- pg_query_by_af(
+      res_none <- pgsql_query_by_af(
         con = con,
         chrom = "Chr01",
         start = 1,

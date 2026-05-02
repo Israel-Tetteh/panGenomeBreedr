@@ -1,4 +1,4 @@
-test_that("pg_query_by_impact filters correctly for every impact level", {
+test_that("pgsql_query_by_impact filters correctly for every impact level", {
   skip_if_not_installed("dittodb")
   skip_if_not_installed("RPostgres")
 
@@ -16,7 +16,7 @@ test_that("pg_query_by_impact filters correctly for every impact level", {
       target_levels <- c("HIGH", "MODERATE", "LOW", "MODIFIER")
 
       for (lvl in target_levels) {
-        res <- pg_query_by_impact(
+        res <- pgsql_query_by_impact(
           con,
           impact_level = lvl,
           chrom = "Chr03",
@@ -43,7 +43,7 @@ test_that("pg_query_by_impact filters correctly for every impact level", {
       }
 
       # 3. Test the default behavior (Full Pangenome Impact)
-      res_all <- pg_query_by_impact(
+      res_all <- pgsql_query_by_impact(
         con,
         chrom = "Chr03",
         start = 79037800,
