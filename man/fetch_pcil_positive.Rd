@@ -57,20 +57,26 @@ and inbreeding coefficients ($F$).
 \donttest{
 library(panGenomeBreedr)
 
-# 1. Fetch data and families
-pcil_data <- fetch_pcil_data(connect_db_mode = 'online')
+# 1. Connect to the package's bundled example database and fetch data/families
+my_db_folder <- system.file("extdata", "pangenome_scale_db",
+                           package = "panGenomeBreedr",
+                           mustWork = TRUE)
+con <- connect_local_db(folder_path = my_db_folder)
+pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
 selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
 
 results <- fetch_pcil_families_by_variant(
+  con = con,
   selection = selection,
   pcil_data = pcil_data,
-  connect_db_mode = 'online'
+  connect_db_mode = "local"
 )
 
 # 2. Get genotypes for the selected variants
 variant_geno_sel <- fetch_genotypes_by_id(
-  variant_ids = selection, 
-  connect_db_mode = 'online'
+  con = con,
+  variant_ids = selection,
+  connect_db_mode = "local"
 )
 
 # 3. Select PCIL positives by variant positions
@@ -83,5 +89,7 @@ pcil_pos_pcv <- fetch_pcil_positive(
   result_pcil_families = results,
   window = 0
 )
+
+disconnect_local_db(con)
 }
 }

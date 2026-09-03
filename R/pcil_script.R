@@ -24,17 +24,15 @@
 #' \donttest{
 #' library(panGenomeBreedr)
 #'
-#' # --- Online Mode ---
-#' # Fetch all PCIL data tables from the remote database
-#' pcil_data <- fetch_pcil_data(connect_db_mode = 'online')
-#' }
+#' # Locate the package's bundled example database
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
 #'
-#' \dontrun{
-#' # --- Offline Mode ---
-#' # Requires a local database folder that contains a "pcil" subfolder;
-#' # the sample dataset shipped with this package does not include one.
-#' con <- connect_local_db(folder_path = "path/to/your/local_db")
-#' pcil_data_local <- fetch_pcil_data(con = con, connect_db_mode = "local")
+#' # Fetch all PCIL data tables
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
+#'
 #' disconnect_local_db(con)
 #' }
 fetch_pcil_data <- function(
@@ -109,21 +107,28 @@ fetch_pcil_data <- function(
 #' @examples
 #' \donttest{
 #' library(panGenomeBreedr)
-#' 
-#' # 1. Fetch PCIL Data
-#' pcil_data <- fetch_pcil_data(connect_db_mode = 'online')
-#' 
+#'
+#' # 1. Connect to the package's bundled example database and load PCIL data
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
+#'
 #' # 2. Define variants of interest
 #' selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
-#' 
+#'
 #' # 3. Fetch PCIL families acting as putative donors for these variants
 #' results <- fetch_pcil_families_by_variant(
+#'   con = con,
 #'   selection = selection,
 #'   pcil_data = pcil_data,
-#'   connect_db_mode = 'online'
+#'   connect_db_mode = "local"
 #' )
-#' 
+#'
 #' print(results$pcil_family_summary)
+#'
+#' disconnect_local_db(con)
 #' }
 fetch_pcil_families_by_variant <- function(
   con = NULL,
@@ -294,23 +299,29 @@ fetch_pcil_families_by_variant <- function(
 #' @examples
 #' \donttest{
 #' library(panGenomeBreedr)
-#' 
-#' # 1. Fetch data and families
-#' pcil_data <- fetch_pcil_data(connect_db_mode = 'online')
+#'
+#' # 1. Connect to the package's bundled example database and fetch data/families
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
 #' selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
-#' 
+#'
 #' results <- fetch_pcil_families_by_variant(
+#'   con = con,
 #'   selection = selection,
 #'   pcil_data = pcil_data,
-#'   connect_db_mode = 'online'
+#'   connect_db_mode = "local"
 #' )
-#' 
+#'
 #' # 2. Get genotypes for the selected variants
 #' variant_geno_sel <- fetch_genotypes_by_id(
-#'   variant_ids = selection, 
-#'   connect_db_mode = 'online'
+#'   con = con,
+#'   variant_ids = selection,
+#'   connect_db_mode = "local"
 #' )
-#' 
+#'
 #' # 3. Select PCIL positives by variant positions
 #' pcil_pos_pcv <- fetch_pcil_positive(
 #'   pcil_data = pcil_data,
@@ -321,6 +332,8 @@ fetch_pcil_families_by_variant <- function(
 #'   result_pcil_families = results,
 #'   window = 0
 #' )
+#'
+#' disconnect_local_db(con)
 #' }
 fetch_pcil_positive <- function(
   pcil_data,
@@ -583,16 +596,25 @@ fetch_pcil_positive <- function(
 #' @examples
 #' \donttest{
 #' library(panGenomeBreedr)
-#' 
-#' # 1. Fetch data and establish positive lines
-#' pcil_data <- fetch_pcil_data(connect_db_mode = "online")
+#'
+#' # 1. Connect to the package's bundled example database and establish positive lines
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
 #' selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
-#' 
-#' variant_geno_sel <- fetch_genotypes_by_id(variant_ids = selection, connect_db_mode = "online")
+#'
+#' variant_geno_sel <- fetch_genotypes_by_id(
+#'   con = con,
+#'   variant_ids = selection,
+#'   connect_db_mode = "local"
+#' )
 #' fam_results <- fetch_pcil_families_by_variant(
+#'   con = con,
 #'   selection = selection,
 #'   pcil_data = pcil_data,
-#'   connect_db_mode = "online"
+#'   connect_db_mode = "local"
 #' )
 #'
 #' pcil_pos_pcv <- fetch_pcil_positive(
@@ -610,9 +632,11 @@ fetch_pcil_positive <- function(
 #'   pcil_data = pcil_data,
 #'   pcil_positive_result = pcil_pos_pcv,
 #'   n_neg = 10
-#' ) 
-#' 
+#' )
+#'
 #' print(head(pcil_neg_pcv$pairs_best))
+#'
+#' disconnect_local_db(con)
 #' }
 fetch_pcil_negative <- function(
   pcil_data,
@@ -929,23 +953,29 @@ fetch_pcil_negative <- function(
 #' @examples
 #' \donttest{
 #' library(panGenomeBreedr)
-#' 
-#' # 1. Fetch PCIL data and variant genotypes
-#' pcil_data <- fetch_pcil_data(connect_db_mode = "online")
+#'
+#' # 1. Connect to the package's bundled example database and fetch data
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
 #' selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
-#' 
+#'
 #' variant_geno_sel <- fetch_genotypes_by_id(
-#'   variant_ids = selection, 
-#'   connect_db_mode = "online"
+#'   con = con,
+#'   variant_ids = selection,
+#'   connect_db_mode = "local"
 #' )
-#' 
+#'
 #' # 2. Fetch relevant families
 #' fam_results <- fetch_pcil_families_by_variant(
+#'   con = con,
 #'   selection = selection,
 #'   pcil_data = pcil_data,
-#'   connect_db_mode = "online"
+#'   connect_db_mode = "local"
 #' )
-#' 
+#'
 #' # 3. Select positive lines
 #' pcil_pos_pcv <- fetch_pcil_positive(
 #'   pcil_data = pcil_data,
@@ -956,13 +986,15 @@ fetch_pcil_negative <- function(
 #'   result_pcil_families = fam_results,
 #'   window = 0
 #' )
-#' 
+#'
 #' # 4. Generate and display the plot
 #' positive_plots <- plot_pcil_positive(pcil_positive_result = pcil_pos_pcv)
-#' 
+#'
 #' if (length(positive_plots) > 0) {
 #'   print(positive_plots[[1]])
 #' }
+#'
+#' disconnect_local_db(con)
 #' }
 plot_pcil_positive <- function(pcil_positive_result) {
   Region <- block_start_bp <- block_end_bp <- SampleID <- NULL
@@ -1032,16 +1064,25 @@ plot_pcil_positive <- function(pcil_positive_result) {
 #' @examples
 #' \donttest{
 #' library(panGenomeBreedr)
-#' 
-#' # 1. Fetch data and find positive lines
-#' pcil_data <- fetch_pcil_data(connect_db_mode = "online")
+#'
+#' # 1. Connect to the package's bundled example database and find positive lines
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
 #' selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
-#' 
-#' variant_geno_sel <- fetch_genotypes_by_id(variant_ids = selection, connect_db_mode = "online")
+#'
+#' variant_geno_sel <- fetch_genotypes_by_id(
+#'   con = con,
+#'   variant_ids = selection,
+#'   connect_db_mode = "local"
+#' )
 #' fam_results <- fetch_pcil_families_by_variant(
+#'   con = con,
 #'   selection = selection,
 #'   pcil_data = pcil_data,
-#'   connect_db_mode = "online"
+#'   connect_db_mode = "local"
 #' )
 #'
 #' pcil_pos_pcv <- fetch_pcil_positive(
@@ -1056,13 +1097,15 @@ plot_pcil_positive <- function(pcil_positive_result) {
 #'
 #' # 2. Plot the best candidate lines genome-wide
 #' best_line_plots <- plot_pcil_best_lines(
-#'   pcil_positive_result = pcil_pos_pcv, 
+#'   pcil_positive_result = pcil_pos_pcv,
 #'   pcil_data = pcil_data
 #' )
-#' 
+#'
 #' if (length(best_line_plots) > 0) {
 #'   print(best_line_plots[[1]])
 #' }
+#'
+#' disconnect_local_db(con)
 #' }
 plot_pcil_best_lines <- function(
   pcil_positive_result,
@@ -1289,16 +1332,26 @@ plot_pcil_best_lines <- function(
 #' @examples
 #' \donttest{
 #' library(panGenomeBreedr)
-#' 
-#' # 1. Run the full pipeline to identify positive and negative pairs
-#' pcil_data <- fetch_pcil_data(connect_db_mode = "online")
+#'
+#' # 1. Connect to the package's bundled example database and run the full
+#' # pipeline to identify positive and negative pairs
+#' my_db_folder <- system.file("extdata", "pangenome_scale_db",
+#'                            package = "panGenomeBreedr",
+#'                            mustWork = TRUE)
+#' con <- connect_local_db(folder_path = my_db_folder)
+#' pcil_data <- fetch_pcil_data(con = con, connect_db_mode = "local")
 #' selection <- c("INDEL_Chr03_79037889", "SNP_Chr03_79037855")
-#' 
-#' variant_geno_sel <- fetch_genotypes_by_id(variant_ids = selection, connect_db_mode = "online")
+#'
+#' variant_geno_sel <- fetch_genotypes_by_id(
+#'   con = con,
+#'   variant_ids = selection,
+#'   connect_db_mode = "local"
+#' )
 #' fam_results <- fetch_pcil_families_by_variant(
+#'   con = con,
 #'   selection = selection,
 #'   pcil_data = pcil_data,
-#'   connect_db_mode = "online"
+#'   connect_db_mode = "local"
 #' )
 #'
 #' pcil_pos_pcv <- fetch_pcil_positive(
@@ -1316,16 +1369,18 @@ plot_pcil_best_lines <- function(
 #'   pcil_positive_result = pcil_pos_pcv,
 #'   n_neg = 10
 #' )
-#' 
+#'
 #' # 2. Generate side-by-side visual comparisons
 #' pair_plots <- plot_pcil_pairs(
 #'   pcil_neg_results = pcil_neg_pcv,
 #'   pcil_data = pcil_data
 #' )
-#' 
+#'
 #' if (length(pair_plots) > 0) {
 #'   print(pair_plots[[1]])
 #' }
+#'
+#' disconnect_local_db(con)
 #' }
 plot_pcil_pairs <- function(pcil_neg_results, pcil_data) {
 

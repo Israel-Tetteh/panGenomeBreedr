@@ -215,7 +215,7 @@ selected table.
 \
 `# Establish a virtual connection to the offline database engine`\
 `con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
-`#> Successfully connected to the local offline database!  Pangenome-scale database  mounted safely. No folder named pcil.`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
 \
 `# Query VCF genotypes within the genomic range: Chr05:75,104,537 - 75,106,403`\
 `gt_region`` ``<-`` `[`fetch_table_region`](https://awkena.github.io/panGenomeBreedr/reference/fetch_table_region.md)`(``con ``=`` ``con_demo``,`\
@@ -442,7 +442,7 @@ intervals of interest.
 \
 `# Establish a virtual connection to the offline database engine`\
 `con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
-`#> Successfully connected to the local offline database!  Pangenome-scale database  mounted safely. No folder named pcil.`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
 \
 `# Run functional annotation summary for region Chr05:75,104,537 - 75,106,403`\
 `ann_summary`` ``<-`` `[`summarize_annotations`](https://awkena.github.io/panGenomeBreedr/reference/summarize_annotations.md)`(``con ``=`` ``con_demo``,`\
@@ -507,7 +507,7 @@ function, as shown below:
 \
 `# Establish a virtual connection to the offline database engine`\
 `con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
-`#> Successfully connected to the local offline database!  Pangenome-scale database  mounted safely. No folder named pcil.`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
 \
 `# Extract HIGH impact functional variants within the target Chr05 window`\
 `high_variants`` ``<-`` `[`fetch_variants_by_impact`](https://awkena.github.io/panGenomeBreedr/reference/fetch_variants_by_impact.md)`(``con ``=`` ``con_demo``,`\
@@ -558,7 +558,7 @@ function is shown in the code snippet below:
 \
 `# Establish a virtual connection to the offline database engine`\
 `con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
-`#> Successfully connected to the local offline database!  Pangenome-scale database  mounted safely. No folder named pcil.`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
 \
 `# Extract genotype data for all HIGH impact variants and filter by alternate allele frequency`\
 `geno_high_filtered`` ``<-`` `[`fetch_genotypes_by_id`](https://awkena.github.io/panGenomeBreedr/reference/fetch_genotypes_by_id.md)`(`\
@@ -590,7 +590,7 @@ Table 3: Filtered variants from the local database. {.table}
 `                           `\
 `# Establish a virtual connection to the offline database engine`\
 `con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
-`#> Successfully connected to the local offline database!  Pangenome-scale database  mounted safely. No folder named pcil.`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
 \
 `# Get genotype data for HIGH impact variants that passed allele filter`\
 `geno_high_filtered`` ``<-`` `[`fetch_genotypes_by_id`](https://awkena.github.io/panGenomeBreedr/reference/fetch_genotypes_by_id.md)`(``con ``=`` ``con_demo``,`\
@@ -727,21 +727,35 @@ retrieves six related tables in a single call:
 | `pcil_inbreeding_coefficient` | Per-sample inbreeding coefficient (F) |
 | `pcil_IBS_dis` | Pairwise Identity-By-State (IBS) genetic distance between every sample pair |
 
-`panGB` is configured to automatically connect to the same public
-**Curated Sorghum Pangenome-Scale Variant Resource** for PCIL data. As
-with the variant discovery functions, set `connect_db_mode = 'online'`
-to query it directly.
+The package’s bundled example database (the same `pangenome_scale_db`
+used throughout this vignette) includes a small PCIL data slice, so the
+walkthrough below runs entirely offline. Set
+`connect_db_mode = 'online'` instead to query the full public **Curated
+Sorghum Pangenome-Scale Variant Resource**.
 
 \
 [`library`](https://rdrr.io/r/base/library.html)`(`[`panGenomeBreedr`](https://awkena.github.io/panGenomeBreedr/)`)`\
 \
-`# Fetch all PCIL data tables from the remote database`\
-`pcil_data`` ``<-`` `[`fetch_pcil_data`](https://awkena.github.io/panGenomeBreedr/reference/fetch_pcil_data.md)`(``connect_db_mode ``=`` ``'online'``)`\
+`# Locate the package example database folder`\
+`mini_folder`` ``<-`` `[`system.file`](https://rdrr.io/r/base/system.file.html)`(``"extdata"``, ``"pangenome_scale_db"``,`\
+`                           package ``=`` ``"panGenomeBreedr"``,`\
+`                           mustWork ``=`` ``TRUE``)`\
+\
+`# Establish a virtual connection to the offline database engine`\
+`con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
+\
+`# Fetch all PCIL data tables from the local database`\
+`pcil_data`` ``<-`` `[`fetch_pcil_data`](https://awkena.github.io/panGenomeBreedr/reference/fetch_pcil_data.md)`(``con ``=`` ``con_demo``)`\
 \
 [`names`](https://rdrr.io/r/base/names.html)`(``pcil_data``)`\
 `#> [1] "pcil_metadata"                  "pcil_gene_regions"             `\
 `#> [3] "pcil_introgressions"            "pcil_genomewide_introgressions"`\
-`#> [5] "pcil_inbreeding_coefficient"    "pcil_IBS_dis"`
+`#> [5] "pcil_inbreeding_coefficient"    "pcil_IBS_dis"`\
+\
+`# Cleanly close the connection and release memory allocations`\
+[`disconnect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/disconnect_local_db.md)`(``con_demo``)`\
+`#> Successfully disconnected from the local database. Memory cleared.`
 
 ### Identifying Candidate Variants for PCIL Screening
 
@@ -753,44 +767,57 @@ Impact](#summarize-snpeff-annotation-and-impact).
 \
 [`library`](https://rdrr.io/r/base/library.html)`(`[`panGenomeBreedr`](https://awkena.github.io/panGenomeBreedr/)`)`\
 \
+`# Locate the package example database folder`\
+`mini_folder`` ``<-`` `[`system.file`](https://rdrr.io/r/base/system.file.html)`(``"extdata"``, ``"pangenome_scale_db"``,`\
+`                           package ``=`` ``"panGenomeBreedr"``,`\
+`                           mustWork ``=`` ``TRUE``)`\
+\
+`# Establish a virtual connection to the offline database engine`\
+`con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
+\
 `# Fetch annotations for the candidate gene`\
 `pg_ann_region`` ``<-`` `[`fetch_table_region`](https://awkena.github.io/panGenomeBreedr/reference/fetch_table_region.md)`(`\
+`  con ``=`` ``con_demo``,`\
 `  table_name ``=`` ``"annotations"``,`\
 `  chrom ``=`` ``'Chr03'``,`\
-`  gene_name ``=`` ``'Sobic.003G421300'``,`\
-`  connect_db_mode ``=`` ``'online'`\
+`  gene_name ``=`` ``'Sobic.003G421300'`\
 `)`\
 \
 `# Distribution of predicted impacts`\
 [`table`](https://rdrr.io/r/base/table.html)`(``pg_ann_region``$``impact``)`\
 `#> `\
 `#>     HIGH      LOW MODERATE MODIFIER `\
-`#>        1       15        8     1051`\
+`#>        1       15        8       34`\
 \
 `# Keep HIGH and MODERATE impact annotations only`\
 `pg_ann_region_mod`` ``<-`` ``pg_ann_region``[``pg_ann_region``$``impact`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`c`](https://rdrr.io/r/base/c.html)`(``"HIGH"``, ``"MODERATE"``)``, ``]`\
 \
 `# Extract genotypes for the selected variants`\
 `variant_geno`` ``<-`` `[`fetch_genotypes_by_id`](https://awkena.github.io/panGenomeBreedr/reference/fetch_genotypes_by_id.md)`(`\
-`  variant_ids ``=`` ``pg_ann_region_mod``$``variant_id``,`\
-`  connect_db_mode ``=`` ``'online'`\
-`)`
+`  con ``=`` ``con_demo``,`\
+`  variant_ids ``=`` ``pg_ann_region_mod``$``variant_id`\
+`)`\
+\
+`# Cleanly close the connection and release memory allocations`\
+[`disconnect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/disconnect_local_db.md)`(``con_demo``)`\
+`#> Successfully disconnected from the local database. Memory cleared.`
 
 | variant_id | annotation | impact | gene_name | hgvs_p |
 |:---|:---|:---|:---|:---|
-| SNP_Chr03_79038300 | missense_variant | MODERATE | Sobic.003G421300 | p.Ala125Val |
-| SNP_Chr03_79038599 | missense_variant | MODERATE | Sobic.003G421300 | p.His225Asp |
-| SNP_Chr03_79038668 | missense_variant | MODERATE | Sobic.003G421300 | p.Ser248Arg |
 | SNP_Chr03_79037855 | missense_variant | MODERATE | Sobic.003G421300 | p.Pro15Ser |
 | SNP_Chr03_79037876 | missense_variant | MODERATE | Sobic.003G421300 | p.Asn22Asp |
-| SNP_Chr03_79038300 | missense_variant | MODERATE | Sobic.003G421300 | p.Ala163Val |
-| SNP_Chr03_79038599 | missense_variant | MODERATE | Sobic.003G421300 | p.His263Asp |
-| SNP_Chr03_79038668 | missense_variant | MODERATE | Sobic.003G421300 | p.Ser286Arg |
 | INDEL_Chr03_79037889 | frameshift_variant | HIGH | Sobic.003G421300 | p.Leu26fs |
+| SNP_Chr03_79038300 | missense_variant | MODERATE | Sobic.003G421300 | p.Ala163Val |
+| SNP_Chr03_79038300 | missense_variant | MODERATE | Sobic.003G421300 | p.Ala125Val |
+| SNP_Chr03_79038599 | missense_variant | MODERATE | Sobic.003G421300 | p.His225Asp |
+| SNP_Chr03_79038599 | missense_variant | MODERATE | Sobic.003G421300 | p.His263Asp |
+| SNP_Chr03_79038668 | missense_variant | MODERATE | Sobic.003G421300 | p.Ser248Arg |
+| SNP_Chr03_79038668 | missense_variant | MODERATE | Sobic.003G421300 | p.Ser286Arg |
 
 Table 6: HIGH/MODERATE impact annotations for Sobic.003G421300. {.table}
 
-Of the nine HIGH/MODERATE impact variants annotated for this gene, we
+Of the six HIGH/MODERATE impact variants annotated for this gene, we
 settle on two tightly linked missense variants as our putative causal
 variants for KASP marker design:
 
@@ -811,12 +838,25 @@ screening.
 \
 [`library`](https://rdrr.io/r/base/library.html)`(`[`panGenomeBreedr`](https://awkena.github.io/panGenomeBreedr/)`)`\
 \
+`# Locate the package example database folder`\
+`mini_folder`` ``<-`` `[`system.file`](https://rdrr.io/r/base/system.file.html)`(``"extdata"``, ``"pangenome_scale_db"``,`\
+`                           package ``=`` ``"panGenomeBreedr"``,`\
+`                           mustWork ``=`` ``TRUE``)`\
+\
+`# Establish a virtual connection to the offline database engine`\
+`con_demo`` ``<-`` `[`connect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/connect_local_db.md)`(``folder_path ``=`` ``mini_folder``)`\
+`#> Successfully connected to the local offline database! Pangenome-scale database  mounted safely.`\
+\
 `# Identify PCIL families acting as putative donors for the selected variants`\
 `results`` ``<-`` `[`fetch_pcil_families_by_variant`](https://awkena.github.io/panGenomeBreedr/reference/fetch_pcil_families_by_variant.md)`(`\
+`  con ``=`` ``con_demo``,`\
 `  selection ``=`` ``selection``,`\
-`  pcil_data ``=`` ``pcil_data``,`\
-`  connect_db_mode ``=`` ``'online'`\
-`)`
+`  pcil_data ``=`` ``pcil_data`\
+`)`\
+\
+`# Cleanly close the connection and release memory allocations`\
+[`disconnect_local_db`](https://awkena.github.io/panGenomeBreedr/reference/disconnect_local_db.md)`(``con_demo``)`\
+`#> Successfully disconnected from the local database. Memory cleared.`
 
 | clan        | families | lines | rp_genotype | selection            | recurrent_allele |
 |:------------|---------:|------:|:------------|:---------------------|:-----------------|
@@ -861,12 +901,12 @@ surface the cleanest, most informative carriers.
 
 | SampleID | Region | Family | mean_donor_frac | total_Mb | total_blocks | F | Rank |
 |:---|:---|:---|---:|---:|---:|---:|---:|
-| 25ALM_BC1F3s1_2186 | INDEL_Chr03_79037889 | Mota Maradi/SC49 | 0.9087747 | 68.25 | 12 | 0.8433 | 1 |
-| 25ALM_BC1F3s1_0416 | INDEL_Chr03_79037889 | Mota Maradi/SC49 | 0.9929687 | 88.50 | 13 | 0.8250 | 2 |
-| 25ALM_BC1F3s1_1552 | INDEL_Chr03_79037889 | IRAT204/SC1439 | 0.9712524 | 101.25 | 8 | 0.7697 | 3 |
-| GMS_MN2025_114058 | INDEL_Chr03_79037889 | Mota Maradi/SC49 | 0.9106486 | 139.50 | 15 | 0.8615 | 4 |
-| 25ALM_BC1F3s1_0534 | INDEL_Chr03_79037889 | IRAT204/SC1439 | 0.9120370 | 141.75 | 11 | 0.7582 | 5 |
-| 25ALM_BC1F3s1_1580 | INDEL_Chr03_79037889 | Mota Maradi/SC49 | 0.8922930 | 162.75 | 17 | 0.8516 | 6 |
+| 25ALM_BC1F3s1_2186 | SNP_Chr03_79037855 | Mota Maradi/SC49 | 0.9087747 | 68.25 | 12 | 0.8433 | 1 |
+| 25ALM_BC1F3s1_0416 | SNP_Chr03_79037855 | Mota Maradi/SC49 | 0.9929687 | 88.50 | 13 | 0.8250 | 2 |
+| 25ALM_BC1F3s1_1552 | SNP_Chr03_79037855 | IRAT204/SC1439 | 0.9712524 | 101.25 | 8 | 0.7697 | 3 |
+| GMS_MN2025_114058 | SNP_Chr03_79037855 | Mota Maradi/SC49 | 0.9106486 | 139.50 | 15 | 0.8615 | 4 |
+| 25ALM_BC1F3s1_0534 | SNP_Chr03_79037855 | IRAT204/SC1439 | 0.9120370 | 141.75 | 11 | 0.7582 | 5 |
+| 25ALM_BC1F3s1_1580 | SNP_Chr03_79037855 | Mota Maradi/SC49 | 0.8922930 | 162.75 | 17 | 0.8516 | 6 |
 
 Table 8: Top-ranked PCIL positive (carrier) lines per target region.
 {.table}
@@ -919,12 +959,12 @@ criteria used for positive selection.
 
 | SampleID_Positive | SampleID_Negative | Region | IBS_dis | total_Mb_neg | F_neg |
 |:---|:---|:---|:---|---:|---:|
-| 25ALM_BC1F3s1_2186 | GMS_MN2025_132056 | INDEL_Chr03_79037889 | 0.0870820 | 69.75 | 0.8332 |
-| 25ALM_BC1F3s1_0416 | GMS_MN2025_132056 | INDEL_Chr03_79037889 | 0.1251400 | 69.75 | 0.8332 |
-| 25ALM_BC1F3s1_1552 | 25ALM_BC1F3s1_0095 | INDEL_Chr03_79037889 | 0.0910448 | 42.75 | 0.8706 |
-| GMS_MN2025_114058 | GMS_MN2025_132056 | INDEL_Chr03_79037889 | 0.0737892 | 69.75 | 0.8332 |
-| 25ALM_BC1F3s1_0534 | 25ALM_BC1F3s1_0095 | INDEL_Chr03_79037889 | 0.0917089 | 42.75 | 0.8706 |
-| 25ALM_BC1F3s1_1580 | GMS_MN2025_132056 | INDEL_Chr03_79037889 | 0.0906915 | 69.75 | 0.8332 |
+| 25ALM_BC1F3s1_2186 | GMS_MN2025_132056 | SNP_Chr03_79037855 | 0.0870820 | 69.75 | 0.8332 |
+| 25ALM_BC1F3s1_0416 | GMS_MN2025_132056 | SNP_Chr03_79037855 | 0.1251400 | 69.75 | 0.8332 |
+| 25ALM_BC1F3s1_1552 | 25ALM_BC1F3s1_0095 | SNP_Chr03_79037855 | 0.0910448 | 42.75 | 0.8706 |
+| GMS_MN2025_114058 | GMS_MN2025_132056 | SNP_Chr03_79037855 | 0.0737892 | 69.75 | 0.8332 |
+| 25ALM_BC1F3s1_0534 | 25ALM_BC1F3s1_0095 | SNP_Chr03_79037855 | 0.0917089 | 42.75 | 0.8706 |
+| 25ALM_BC1F3s1_1580 | GMS_MN2025_132056 | SNP_Chr03_79037855 | 0.0906915 | 69.75 | 0.8332 |
 
 Table 9: Best-matched PCIL negative control for each positive line.
 {.table}
