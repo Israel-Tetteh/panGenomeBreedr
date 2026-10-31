@@ -231,6 +231,10 @@ app_ui <- function(request) {
               bslib::card(
                 bslib::card_header(h5(tags$b("Allele Call Summary"))),
                 mod_mv_get_alleles_ui("mv_get_alleles_1") # allele info
+              ),
+              bslib::card(
+                bslib::card_header(h5(tags$b("Marker Call Rates"))),
+                mod_mv_call_rate_ui("mv_call_rate_1") # call rate summary & plots
               )
             )
           ),

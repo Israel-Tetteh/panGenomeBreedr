@@ -136,6 +136,7 @@ reference:
       - kasp_qc_ggplot2
       - plot_plate
       - nsamples_plate
+      - kasp_call_rate
       - kasp_reshape_wide
       - proc_kasp
       - geno_error

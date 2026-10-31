@@ -142,6 +142,10 @@ app_server <- function(input, output, session) {
       "mv_get_alleles_1",
       kasp_data = import_data_entities()
     )
+    mod_mv_call_rate_server(
+      "mv_call_rate_1",
+      kasp_data = import_data_entities()
+    )
   })
 
   # Color coding server side
